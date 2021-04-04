@@ -1,0 +1,14 @@
+@keyframes anim {
+    from   {left: var(--start-position); top: -100px; transform: rotate(var(--rotation-start));}
+    to {left: var(--end-position); top: 100%; transform: rotate(var(--rotation-end));}
+}
+
+.fallingman {
+    position: absolute;
+    opacity: 20%;
+    width: var(--target-width);
+    animation-name: anim;
+    animation-duration: var(--duration-random);
+    animation-timing-function: ease-in;
+    z-index: -1;
+}

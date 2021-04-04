@@ -1,0 +1,60 @@
+.main {
+    text-align: center;
+    display: flex;
+    align-items: center;
+    height: 100vh;
+    justify-content: center;
+    
+}
+
+.title {
+    margin: 0;
+    font-size: 3vw;
+    font-weight: lighter;
+}
+
+.zone-image {
+    width: 17vw;
+}
+
+.total {
+    margin-top: -20px;
+}
+
+.total img {
+    display: block;
+    height: 10vw;
+}
+
+.total h1, .total img {
+    display: inline;
+    vertical-align: middle;
+    padding: 0 10px;
+    font-size: 10vw;
+}
+
+.left {
+    color: #4b4b4b;
+    font-size: 1.2vw;
+    position: fixed;
+    left: 10px;
+    bottom: 5px;
+    margin: 0;
+}
+
+.right {
+    color: #4b4b4b;
+    font-size: 1.2vw;
+    position: fixed;
+    right: 10px;
+    bottom: 5px;
+    margin: 0;
+}
+
+.big-error {
+    color: rgb(173, 0, 0) !important;
+}
+
+.small-error {
+    color: rgb(0, 128, 32);
+}

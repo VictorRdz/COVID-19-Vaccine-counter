@@ -1,0 +1,12 @@
+<div class="main">
+  <div class="middle-section">
+    <img class="zone-image" src="/assets/earth.png">
+    <h2 class="title">COVID-19 vaccines administered (estimated):</h2>
+    <div class="total">
+      <img src="/assets/vaccine_1.png">
+      <h1>{{ displayValue | number }}</h1>
+    </div>
+  </div>
+</div>
+<p class="left">Data source: <b>Our World in Data</b> (transformed), adjusted and updated everyday</p>
+<p class="right">Yesterday error: <b class="small-error" [class.big-error]="bigError">{{ displayError | percent : '1.2-2' }}</b></p>
