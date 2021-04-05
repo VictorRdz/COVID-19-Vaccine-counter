@@ -78,12 +78,15 @@ namespace covid19_backend.Tasks
                     if(!upToDate) {
                         if(hourToUpdate <= 23) {
                             hourToUpdate++;
-                            logger.LogWarning(DateTime.Now.ToString("dd-MM-yy - h:mm tt => ") + "Server data is NOT up-to-date, trying again at " + hourToUpdate + ":" + DateTime.Now.ToString("mm"));
-
+                            string warning = "Server data is NOT up-to-date, trying again at " + hourToUpdate + ":" + DateTime.Now.ToString("mm");
+                            logger.LogWarning(DateTime.Now.ToString("dd-MM-yy - h:mm tt => ") + warning);
+                            EmailNotification.SendWarning(warning);
                         }
                         else {
                             hourToUpdate = 0;
-                            logger.LogWarning(DateTime.Now.ToString("dd-MM-yy - h:mm tt => ") + "Server data is NOT up-to-date, trying again at 00:" + DateTime.Now.ToString("mm"));
+                            string warning = "Server data is NOT up-to-date, trying again at 00:" + DateTime.Now.ToString("mm");
+                            logger.LogWarning(DateTime.Now.ToString("dd-MM-yy - h:mm tt => ") + warning);
+                            EmailNotification.SendWarning(warning);
                         }
                     }
                     else {
@@ -96,7 +99,6 @@ namespace covid19_backend.Tasks
 
         public void InitializeData()
         {
-
             DateTime dateBase = Convert.ToDateTime(DateTime.Now.ToString("yyyy-MM-dd") + " 11:00 AM");
             DateTime dateNow = DateTime.Now;
 
@@ -108,6 +110,18 @@ namespace covid19_backend.Tasks
 
             int timeInSeconds = (dateNow - dateBase).Hours * 3600 + (dateNow - dateBase).Minutes * 60 + (dateNow - dateBase).Seconds;
             
+            if(prediction <= displayValue) {
+                string warning = "Prediction is larger than display value: " + prediction + " > " + displayValue;
+                logger.LogWarning(DateTime.Now.ToString("dd-MM-yy - h:mm tt => ") +  warning);
+                double newDisplay = VaccinationData.GetTotalVaccinations(data, "World", dateBase.AddDays(-1).ToString("yyyy-MM-dd"));
+                string warning2 = "Assigning yesterday value to display value: Previous display: " + displayValue + " | New display: " + newDisplay;
+                logger.LogWarning(DateTime.Now.ToString("dd-MM-yy - h:mm tt => ") +  warning2);
+                EmailNotification.SendWarning(warning + " ||| " + warning2);
+
+                displayValue = newDisplay;
+                displayValue = VaccinationData.GetTotalVaccinations(data, "World", dateBase.AddDays(-1).ToString("yyyy-MM-dd"));
+            }
+            
             double initialValue = displayValue;
             if(initialValue == 0) {
                 initialValue = VaccinationData.GetTotalVaccinations(data, "World", dateBase.AddDays(-1).ToString("yyyy-MM-dd"));
@@ -117,20 +131,21 @@ namespace covid19_backend.Tasks
 
             yesterdayError = VaccinationData.GetSinglePredictionError(data, dateBase.AddDays(-1).ToString("yyyy-MM-dd"));
             if(Math.Abs(yesterdayError) > 5) {
-                logger.LogWarning(DateTime.Now.ToString("dd-MM-yy - h:mm tt => ") + "Yesterday error was: " + yesterdayError);
+                string warning = DateTime.Now.ToString("dd-MM-yy - h:mm tt => ") + "Yesterday error was: " + yesterdayError + "%";
+                logger.LogWarning(warning);
             }
             else {
                 logger.LogInformation(DateTime.Now.ToString("dd-MM-yy - h:mm tt => ") + "Yesterday error was: " + yesterdayError + "%");
             }
-            logger.LogInformation(DateTime.Now.ToString("dd-MM-yy - h:mm tt => ") + "Today's prediction is: " + prediction + ", starting at " + displayValue);
+            logger.LogInformation(DateTime.Now.ToString("dd-MM-yy - h:mm tt => ") + "Today's prediction is: " + prediction + ", starting at " + Math.Round(displayValue));
             dataUpdater?.Dispose();
             // Update data every second
             logger.LogInformation(DateTime.Now.ToString("dd-MM-yy - h:mm tt => ") + "Restarting data randomizer.");
+            EmailNotification.SendDailyReport(yesterdayError, VaccinationData.GetTotalVaccinations(data, "World", dateBase.ToString("yyyy-MM-dd")), UpdateData.GetDisplayValue(), prediction);
             dataUpdater = new Timer(o =>
             {
                 displayValue += RandomizeData.GetUpdateRandom(initialValue, prediction);
             }, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
-
         }
 
 
