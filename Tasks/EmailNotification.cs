@@ -14,7 +14,7 @@ namespace covid19_backend.Tasks
             if(Math.Abs(error) >= 5) {
                 color = "#A71010";
             }
-            string body = $"<b>Data is up-to-date</b><br><b>Actual value: </b><span>{ actualValue }</span><br><b>Display value: </b><span>{ displayValue }</span><br><b>Prediction: </b><span>{ prediction }</span><br><b>Error: </b><span style='color: { color }'>{ auxError }</span>";
+            string body = $"<b>Data is up-to-date</b><br><br><b>Initial value: </b><span>{ actualValue }</span><br><b>Display value: </b><span>{ displayValue }</span><br><b>Prediction: </b><span>{ prediction }</span><br><b>Error: </b><span style='color: { color }'>{ auxError }</span>";
 
             EmailNotification.SendEmail(subject, body, true);
         }
