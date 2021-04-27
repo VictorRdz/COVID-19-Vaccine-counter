@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using covid19_backend.Data;
 using covid19_backend.Models;
+using covid19_backend.Services;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -15,10 +16,6 @@ namespace covid19_backend.Tasks
         private readonly ILogger<UpdateData> logger;
         private Timer dataUpdater;
         private Timer dayTimer;
-        private static double displayValue = 0;
-        private static double yesterdayError = 0;
-        private List<Vaccination> data = new List<Vaccination>();
-        private int hourToUpdate = 11;
 
         public UpdateData(ILogger<UpdateData> logger) 
         {
@@ -33,8 +30,8 @@ namespace covid19_backend.Tasks
 
         public Task StartAsync(CancellationToken cancellationToken)
         {            
-            UpdateDataFromServer(true);
-            dayTimer = new Timer(o => UpdateDataFromServer()
+            StartCounter(true);
+            dayTimer = new Timer(o => StartCounter()
                 , null, TimeSpan.Zero, TimeSpan.FromHours(1));
 
             return Task.CompletedTask;
@@ -42,119 +39,101 @@ namespace covid19_backend.Tasks
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            logger.LogInformation("Se detuvo");
+            logger.LogInformation("Stopped.");
             return Task.CompletedTask;
         }
 
-        public static double GetDisplayValue()
-        {
-            return Math.Round(displayValue);
-        }
-
-        public static double GetYesterdayError()
-        {
-            return yesterdayError;
-        }
-
-        public async void UpdateDataFromServer(bool forceUpdate = false) 
-        {
-            DateTime dateBase = Convert.ToDateTime(DateTime.Now.ToString("yyyy-MM-dd") + " 11:00 AM");
-            DateTime dateNow = DateTime.Now;
-            if((DateTime.Now.Hour == hourToUpdate) || forceUpdate ) {
-                logger.LogInformation(DateTime.Now.ToString("dd-MM-yy - h:mm tt => ") + "Updating data from server...");
-                // Update data from server.
-                bool updated = false;
-                updated = await VaccinationData.DownloadNewData();
-                if(updated) {
-                    logger.LogInformation(DateTime.Now.ToString("dd-MM-yy - h:mm tt => ") + "Downloaded data from server.");
-                    bool upToDate = false;
-                    data = await VaccinationData.TransformDataToCsv();
-                    if(dateNow < dateBase) {
-                        upToDate = VaccinationData.IsDataUpdated(data, dateNow.AddDays(-2));
-                    }
-                    else {
-                        upToDate = VaccinationData.IsDataUpdated(data, dateNow.AddDays(-1));
-                    }
-                    if(!upToDate) {
-                        if(hourToUpdate <= 23) {
-                            hourToUpdate++;
-                            string warning = "Server data is NOT up-to-date, trying again at " + hourToUpdate + ":" + DateTime.Now.ToString("mm");
-                            logger.LogWarning(DateTime.Now.ToString("dd-MM-yy - h:mm tt => ") + warning);
-                            EmailNotification.SendWarning(warning);
-                        }
-                        else {
-                            hourToUpdate = 0;
-                            string warning = "Server data is NOT up-to-date, trying again at 00:" + DateTime.Now.ToString("mm");
-                            logger.LogWarning(DateTime.Now.ToString("dd-MM-yy - h:mm tt => ") + warning);
-                            EmailNotification.SendWarning(warning);
-                        }
-                    }
-                    else {
-                        logger.LogInformation(DateTime.Now.ToString("dd-MM-yy - h:mm tt => ") + "Server data is up-to-date.");
-                        InitializeData();
-                    }
+        private int hourOfUpdate = 6; // 24H 
+        private static double display = 0;
+        private List<Vaccination> data = new List<Vaccination>();
+        private double previousPrediction = 0;
+        private double prediction = 0;
+        public async void StartCounter(bool forceUpdate = false) {
+            if(DateTime.Now.Hour == hourOfUpdate || forceUpdate) {
+                // Update data from server
+                bool update = await ServerData.Update();
+                data = await ServerData.GetList();
+                if(update) {
+                    logger.LogInformation("Downloaded data from server.");
                 }
-            }
-        }
+                
+                // Check if predictionDate is today or yesterday
+                DateTime now = DateTime.Now;
+                DateTime predictionDate;
+                DateTime todayUpdateDate = DateTime.ParseExact(now.ToString("yyyy-MM-dd") + " " + hourOfUpdate + ":00", "yyyy-MM-dd H:mm", null);
+                DateTime lastUpdateDate;
+                if(todayUpdateDate < now) {
+                    // Last update was today
+                    lastUpdateDate = todayUpdateDate;
+                    predictionDate = now;
+                }
+                else {
+                    // Last update was yesterday
+                    lastUpdateDate = todayUpdateDate.AddDays(-1);
+                    predictionDate = now.AddDays(-1);
+                }
+                int secondsAfterUpdate = (int)(now - lastUpdateDate).TotalSeconds;
 
-        public void InitializeData()
-        {
-            DateTime dateBase = Convert.ToDateTime(DateTime.Now.ToString("yyyy-MM-dd") + " 11:00 AM");
-            DateTime dateNow = DateTime.Now;
+                // Check if data is up-to-date
+                if(!ServerData.IsUpdated(data, predictionDate.AddDays(-1))) {
+                    hourOfUpdate++;
+                    if(hourOfUpdate == 24) {
+                        hourOfUpdate = 0;
+                    }
+                    string warning = "Data is not up-to-date, trying again at " + hourOfUpdate.ToString("D2") + ":" + DateTime.Now.Minute.ToString("D2");
+                    logger.LogWarning(warning);
+                    EmailNotification.SendWarning(warning);
+                    return;
+                }
 
-            if(dateBase > dateNow) {
-                dateBase = dateBase.AddDays(-1);
-            }
+                // Reset hour to update
+                hourOfUpdate = 6;
 
-            double prediction = VaccinationData.PredictVaccination(data, dateBase.ToString("yyyy-MM-dd"));
-            int timeInSeconds = (dateNow - dateBase).Hours * 3600 + (dateNow - dateBase).Minutes * 60 + (dateNow - dateBase).Seconds;        
-            double previousActualValue = VaccinationData.GetTotalVaccinations(data, "World", dateBase.AddDays(-1).ToString("yyyy-MM-dd"));
-            // Make adjustment
-            if(prediction <= previousActualValue) {
+                // Save previous prediction
+                if(prediction == 0) {
+                    previousPrediction = Prediction.GetTotal(data, predictionDate.AddDays(-1));
+                }
+                else {
+                    previousPrediction = prediction;
+                }
+
+                // Get prediction
+                prediction = Prediction.GetTotal(data, predictionDate);
+                double previous = TotalVaccinations.GetTotal(data, predictionDate.AddDays(-1));
+                
+                // Set initial value
+                double startValue = display;
                 dataUpdater?.Dispose();
+                Randomize.ResetRandom();
 
-                string warning = "Prediction is larger than previous value: " + prediction + " > " + previousActualValue;
-                logger.LogWarning(DateTime.Now.ToString("dd-MM-yy - h:mm tt => ") +  warning);
+                if(display == 0) {
+                    display = Randomize.GetInitial(previous, prediction, secondsAfterUpdate);
+                    startValue = previous;
+                }
 
-                double previousPreviousActualValue = VaccinationData.GetTotalVaccinations(data, "World", dateBase.AddDays(-2).ToString("yyyy-MM-dd"));
-                double gap = (previousActualValue - previousPreviousActualValue) / 1.5;
-                displayValue = previousActualValue;
-                prediction = previousActualValue + gap;
+                // Run counter until next update
+                dataUpdater = new Timer(o =>
+                {
+                    display += Randomize.GetIncrement(startValue, prediction);
+                }, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
 
-                string warning2 = $"Adjusting: display value = {displayValue}, prediction = {prediction}";
-                logger.LogWarning(DateTime.Now.ToString("dd-MM-yy - h:mm tt => ") +  warning2);
+                // Print information
+                string dataError = Error.GetDataError(data,predictionDate.AddDays(-1));
+                string error = Error.GetError(data,predictionDate.AddDays(-1));
 
-                EmailNotification.SendWarning(warning + " ||| " + warning2);
-
+                logger.LogInformation("Previous: " + previous);
+                logger.LogInformation("Display: " + display + " after " + secondsAfterUpdate + " seconds");
+                logger.LogInformation("Predicion: " + prediction);
+                logger.LogInformation("Data error: " + dataError);
+                logger.LogInformation("Error: " + error);
+                EmailNotification.SendDailyReport(error, dataError, previous, GetDisplay(), secondsAfterUpdate, prediction, previousPrediction);
             }
-            
-            double initialValue = displayValue;
-            if(initialValue == 0) {
-                initialValue = VaccinationData.GetTotalVaccinations(data, "World", dateBase.AddDays(-1).ToString("yyyy-MM-dd"));
-                initialValue = RandomizeData.GetInitialValue(initialValue, prediction, timeInSeconds);
-                displayValue = initialValue;
-            }
-
-            yesterdayError = VaccinationData.GetSinglePredictionError(data, dateBase.AddDays(-1).ToString("yyyy-MM-dd"));
-            if(Math.Abs(yesterdayError) > 5) {
-                string warning = DateTime.Now.ToString("dd-MM-yy - h:mm tt => ") + "Yesterday error was: " + yesterdayError + "%";
-                logger.LogWarning(warning);
-            }
-            else {
-                logger.LogInformation(DateTime.Now.ToString("dd-MM-yy - h:mm tt => ") + "Yesterday error was: " + String.Format("{0:0.00}", yesterdayError) + "%");
-            }
-            logger.LogInformation(DateTime.Now.ToString("dd-MM-yy - h:mm tt => ") + "Today's prediction is: " + prediction + ", starting at " + Math.Round(displayValue));
-            dataUpdater?.Dispose();
-            // Update data every second
-            logger.LogInformation(DateTime.Now.ToString("dd-MM-yy - h:mm tt => ") + "Restarting data randomizer.");
-            EmailNotification.SendDailyReport(yesterdayError, VaccinationData.GetTotalVaccinations(data, "World", dateBase.AddDays(-1).ToString("yyyy-MM-dd")), UpdateData.GetDisplayValue(), prediction);
-            dataUpdater = new Timer(o =>
-            {
-                displayValue += RandomizeData.GetUpdateRandom(initialValue, prediction);
-            }, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
         }
 
+        public static double GetDisplay() {
+            return Math.Round(display);
+        }
 
     }
-
 }
+

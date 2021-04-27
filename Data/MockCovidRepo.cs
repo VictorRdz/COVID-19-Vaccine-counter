@@ -18,7 +18,7 @@ namespace covid19_backend.Data
 
         public Covid GetZone(string zone)
         {
-            return new Covid { Confirmed=0, Deaths=0, Recovered=0, Vaccined=UpdateData.GetDisplayValue(), Error=UpdateData.GetYesterdayError() };
+            return new Covid { Confirmed=0, Deaths=0, Recovered=0, Vaccined=UpdateData.GetDisplay(), Error=0 };
         }
     }
 }

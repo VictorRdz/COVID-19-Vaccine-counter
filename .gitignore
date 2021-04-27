@@ -26,6 +26,7 @@ Obj/
 
 # Visual Studio 2015 cache/options directory
 .vs/
+.vscode/
 
 # MSTest test Results
 [Tt]est[Rr]esult*/
@@ -229,3 +230,6 @@ _Pvt_Extensions
 
 # FAKE - F# Make
 .fake/
+
+# COVID-19 Data
+data.csv
