@@ -25,10 +25,11 @@ namespace covid19_backend.Tasks
             dailyUpdater?.Dispose();
         }
 
+        public static Counter counterTotal = new Counter(TotalVaccinations.TOTAL);
+        public static Counter counterPeopleFully = new Counter(TotalVaccinations.PEOPLE_FULLY);
         public Task StartAsync(CancellationToken cancellationToken)
         {            
-            Counter counterTotal = new Counter(TotalVaccinations.TOTAL);
-            Counter counterPeopleFully = new Counter(TotalVaccinations.PEOPLE_FULLY);
+            
 
             StartService(counterTotal, counterPeopleFully);
             dailyUpdater = new Timer(o => {
@@ -90,7 +91,7 @@ namespace covid19_backend.Tasks
 
             // Store error data
             counter.DataError = Error.GetDataError(data, predictionDate.AddDays(-1), counter.Type);
-            counter.Error = Error.GetError(data, predictionDate.AddDays(-1), counter.Type);
+            counter.PredictionError = Error.GetError(data, predictionDate.AddDays(-1), counter.Type);
         }
 
         public async Task<bool> UpdateFromServer() {
@@ -113,6 +114,7 @@ namespace covid19_backend.Tasks
                 return false;
             }
             else {
+                hourOfUpdate = 6; // Reset hour of update
                 return true;
             }
         }

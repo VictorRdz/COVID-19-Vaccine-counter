@@ -14,15 +14,15 @@ namespace covid19_backend.Controllers
             _repository = repository;
         }
 
-        [HttpGet]
-        public ActionResult <IEnumerable<Covid>> GetAll() {
-            var allData = _repository.GetAll();
-            return Ok(allData);
+        [HttpGet("total")]
+        public ActionResult <Display> GetTotal() {
+            var data = _repository.GetTotal();
+            return Ok(data);
         }
 
-        [HttpGet("{zone}")]
-        public ActionResult <Covid> GetZone(string zone) {
-            var data = _repository.GetZone(zone);
+        [HttpGet("people-fully")]
+        public ActionResult <Display> GetPeopleFully() {
+            var data = _repository.GetPeopleFully();
             return Ok(data);
         }
 
