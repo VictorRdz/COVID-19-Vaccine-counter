@@ -5,23 +5,19 @@ namespace covid19_backend.Services
     public class Randomize
     {
         public static int seed = 2837;
-        public static Random rand = new Random();
-        public static double GetInitial(double startValue, double finalValue, int time) {
+        public static double GetInitial(double startValue, double finalValue, int time, Random rand) {
             double result = 0;
-
-            ResetRandom();
             for(int i = 0; i < time; i++) {
-                result += GetIncrement(startValue, finalValue);
+                result += GetIncrement(startValue, finalValue, rand);
             }
             return Math.Round(startValue + result);
         }
 
-        public static void ResetRandom() {
-            rand = new Random(seed);
-            return;
+        public static Random GetRandom() {
+            return new Random(seed);
         }
 
-        public static double GetIncrement(double startValue, double finalValue) {
+        public static double GetIncrement(double startValue, double finalValue, Random rand) {
             double value = 0;
             double increment = (finalValue - startValue) / 86400;
             int randomValue = rand.Next(7);

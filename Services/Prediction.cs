@@ -20,9 +20,9 @@ namespace covid19_backend.Services
             return operacion(length, curve[0], curve[1], curve[2]);
         }
 
-        public static double GetTotal(List<Vaccination> data, DateTime dayToPredict) {
+        public static double GetTotal(List<Vaccination> data, DateTime dayToPredict, string type) {
             double result = 0;
-            double[] lastRecords = TotalVaccinations.GetLast(data, dayToPredict.AddDays(-1));
+            double[] lastRecords = TotalVaccinations.GetLast(data, dayToPredict.AddDays(-1), type);
 
             // Prediction using 90 days
             double prediction1 = Polynomial(lastRecords);
@@ -41,7 +41,7 @@ namespace covid19_backend.Services
 
             // Promedio
             result = (prediction1 + prediction2 + prediction3 + prediction4 + prediction5 + prediction6 + prediction7) / 7;
-            double previous = TotalVaccinations.GetTotal(data, dayToPredict.AddDays(-1));
+            double previous = TotalVaccinations.GetTotal(data, dayToPredict.AddDays(-1), type);
             if(previous > result) {
                 result = previous;
             }

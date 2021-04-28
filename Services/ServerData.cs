@@ -26,10 +26,9 @@ namespace covid19_backend.Services
                 return false;  
             }
         }
-
         public static bool IsUpdated(List<Vaccination> data, System.DateTime date) {
             bool updated = false;
-            double total = TotalVaccinations.GetTotal(data, date);
+            double total = TotalVaccinations.GetTotal(data, date, TotalVaccinations.TOTAL);
             if(total > 0) {
                 updated = true;
             } 
