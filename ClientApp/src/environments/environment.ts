@@ -5,6 +5,8 @@
 export const environment = {
   production: false,
   apiUrl: 'https://localhost:5001/',
+  updateTime: 5,
+  fps: 30
 };
 
 /*

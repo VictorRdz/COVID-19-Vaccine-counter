@@ -1,0 +1,29 @@
+.layout {
+    width: 100%;
+    position:fixed;
+    top: 0;
+    opacity: 0.2;
+}
+
+.app {
+    text-align: center;
+}
+
+.credits {
+    font-size: 1.7vw;
+    margin-top: 5.3vw;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+
+}
+
+.title {
+    font-size: 3vw;
+    margin-top: 1.3vw;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+}

@@ -1,0 +1,26 @@
+.layout {
+    width: 100%;
+    position:fixed;
+    top: 0;
+    opacity: 0.2;
+}
+
+.app {
+    text-align: center;
+    transform: rotate(-90deg);
+    width: 100vh;
+    height: 100vh;
+}
+
+.credits {
+    font-size: 3vh;
+    margin-bottom: 7vw;
+    margin-top: 1vw;
+
+}
+
+.title {
+    margin: 0;
+    font-size: 7vh;
+    margin-top: 4vw;
+}

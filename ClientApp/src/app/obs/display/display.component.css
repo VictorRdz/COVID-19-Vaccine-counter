@@ -1,0 +1,58 @@
+.image-container {
+    margin-right: 2vh;
+}
+
+.display {
+    align-items: center;
+    color:#0e0e0e;
+    display: flex;
+    margin: auto;
+    padding: 2vh;
+    width: 90vh;
+    padding-top: 3vw;
+    padding-bottom: 3vw;
+}
+
+
+.title-container {
+    display: flex;
+    align-items: center;
+}
+
+.icon {
+    width: 3vh;
+}
+
+.image {
+    display: block;
+    width: 14vh;
+}
+
+.small {
+    font-size: 2.5vh;
+    margin-right: 4vh;
+}
+
+.title {
+    display: inline;
+    font-size: 3.5vh;
+    margin-left: 1vh;
+}
+
+.value {
+    font-size: 10vh;
+    margin: 0;
+    margin-top: -1.7vh;
+    margin-bottom: -1.7vh;
+
+}
+
+
+.value-container {
+    text-align: left;
+}
+
+.zone {
+    font-size: 1.8vh;
+    margin: 1vh;
+}

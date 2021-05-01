@@ -1,4 +1,6 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://localhost:5001/',
+  apiUrl: 'http://35.232.241.246/',
+  updateTime: 60,
+  fps: 30
 };

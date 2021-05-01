@@ -3,7 +3,7 @@
     font-family: 'Open Sans', sans-serif;
 }
 
-.main {
-    margin: 0;
+body {
     overflow: hidden;
+    margin: 0;
 }

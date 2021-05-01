@@ -1,0 +1,20 @@
+<div class="display">
+    <div class="image-container">
+        <div>
+            <img  class="image" src="{{ imageUrl }}">
+        </div>
+    </div>
+    <div>
+        <div class="title-container">
+            <img  class="icon" src="{{ iconUrl }}">
+            <span class="title">{{ title }}</span>
+        </div>
+        <div class="value-container">
+            <h1 class="value">{{ display?.value | number: '1.0-0' }}</h1>
+            <span class="small">Total error: <span>{{ display?.dataError }}</span></span>
+            <span class="small">Last prediction error: <span>{{ display?.predictionError }}</span></span>
+        </div>
+    </div>
+</div>
+<div>
+</div>

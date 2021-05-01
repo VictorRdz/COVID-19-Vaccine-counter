@@ -1,0 +1,14 @@
+@keyframes anim {
+    from   {top: var(--start-position); left: -100px; transform: rotate(var(--rotation-start));}
+    to {top: var(--end-position); left: 200%; transform: rotate(var(--rotation-end));}
+}
+
+.falling-vaccine {
+    position: absolute;
+    opacity: 0.8;
+    width: var(--target-width);
+    animation-name: anim;
+    animation-duration: var(--duration-random);
+    animation-timing-function: ease-in;
+    z-index: -2;
+}
