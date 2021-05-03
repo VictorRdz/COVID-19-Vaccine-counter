@@ -17,7 +17,8 @@ export class WebComponent implements OnInit {
     private vf:ViewContainerRef) { }
 
   ngOnInit(): void {
-    this.vaccineDisplay = interval(500).subscribe(data => this.createFallingman());
+    let vaccinesPerSecond = 3;
+    this.vaccineDisplay = interval(1000 / vaccinesPerSecond).subscribe(data => this.createFallingman());
   }
 
   @Input() peopleFully: Display;

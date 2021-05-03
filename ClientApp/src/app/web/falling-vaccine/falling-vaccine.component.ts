@@ -21,13 +21,13 @@ export class FallingVaccineComponent implements OnInit {
 
   hide = false;
   imageNumber = this.getRandomInt(1, 9);
-  startPositionVal = this.getRandomInt(10, 90);
+  startPositionVal = this.getRandomInt(0, 90);
   rotationStartVal = this.getRandomInt(45, 315);
 
   @HostBinding('style.--target-width')
   private targetWidth: string = this.getRandomInt(6, 9) + 'vw';
 
-  public duration = this.getRandomInt(2, 5);
+  public duration = this.getRandomInt(3, 5);
   @HostBinding('style.--duration-random')
   private durationRandom: string = this.duration + 's';
 

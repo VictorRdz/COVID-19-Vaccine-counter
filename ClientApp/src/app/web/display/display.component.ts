@@ -41,8 +41,8 @@ export class DisplayComponent implements OnInit {
       let increment = (this.nextDisplay.value - this.display.value) / totalFrames;
       
       this.updater?.unsubscribe();
-      this.updater = interval(1000 / environment.fps).subscribe(data => {
-        if(data >= totalFrames) {
+      this.updater = interval(1000 / environment.fps).subscribe(i => {
+        if(i >= totalFrames) {
           // Small increment on http delay
           this.display.value += increment * 0.5;
         }

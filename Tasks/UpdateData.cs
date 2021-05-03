@@ -110,7 +110,7 @@ namespace covid19_backend.Tasks
                 }
                 string warning = "Data is not up-to-date, trying again at " + hourOfUpdate.ToString("D2") + ":" + DateTime.Now.Minute.ToString("D2");
                 logger.LogWarning(warning);
-                EmailNotification.SendWarning(warning);
+                // EmailNotification.SendWarning(warning);
                 return false;
             }
             else {

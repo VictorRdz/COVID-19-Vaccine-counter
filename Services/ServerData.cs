@@ -15,8 +15,8 @@ namespace covid19_backend.Services
             try
             {
                 var client = new WebClient();
-                string url = "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/vaccinations/vaccinations.csv";
-                string filePath = "";
+                string url = "https://covid.ourworldindata.org/data/vaccinations/vaccinations.csv";
+                string filePath = "wwwroot/";
                 string filename = "data.csv";
                 await Task.Run(() => client.DownloadFile(url, filePath + filename));
                 return true;
@@ -36,8 +36,8 @@ namespace covid19_backend.Services
         }
 
         public static async Task<List<Vaccination>> GetList() {
-            string url = "";
-            string filename = "data.csv"; //temporal
+            string url = "wwwroot/";
+            string filename = "data.csv";
             IEnumerable<Vaccination> result = Enumerable.Empty<Vaccination>();
             
             await Task.Run(() => {
